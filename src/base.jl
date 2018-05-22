@@ -16,12 +16,10 @@ end
 
 """
     $(SIGNATURES)
-
   - `val::Int`: non-zero entry - label.
   - `dim::Int`: length of the vector.
   - `sparse:Bool` : sparse\/dense option. Optional `sparse=false`.
-
-    Return column vector describing quantum state
+    Return column vector \$|val\\rangle\$ describing quantum state
 """
 function ket(val::Int, dim::Int; sparse=false)
     if sparse
@@ -31,17 +29,14 @@ function ket(val::Int, dim::Int; sparse=false)
     end
 end
 
-
 bra(::Type{Tv}, val::Int, dim::Int) where Tv<:AbstractVector{T} where T<:Number = ket(Tv, val, dim)'
 
 """
   $(SIGNATURES)
-
   - `val::Int`: non-zero entry - label.
   - `dim::Int`: length of the vector
   - `sparse:Bool` : sparse\/dense option. Optional `sparse=false`.
-
-  Return Hermitian conjugate of the ket with the same label.
+  Return Hermitian conjugate of the ket \$\\langle val| = |val\\rangle^\\dagger\$ with the same label.
 """
 function bra(val::Int, dim::Int; sparse=false)
     if sparse
@@ -67,6 +62,14 @@ function ketbra(::Type{Tv}, valk::Int, valb::Int, dim::Int) where Tv<:AbstractSp
     ϕψ
 end
 
+"""
+  $(SIGNATURES)
+  - `valk::Int`: non-zero entry - label.
+  - `valb::Int`: non-zero entry - label.
+  - `dim::Int`: length of the vector
+  - `sparse:Bool` : sparse\/dense option. Optional `sparse=false`.
+  Return outer product \$\|valk\\rangle\\langle vakb|\$ of states \$\|valk\\rangle\$ and \$\|valb\\rangle\$.
+"""
 function ketbra(valk::Int, valb::Int, dim::Int; sparse=false)
     if sparse
         return ketbra(SparseMatrixCSC{ComplexF64}, valk, valb, dim)
@@ -75,6 +78,11 @@ function ketbra(valk::Int, valb::Int, dim::Int; sparse=false)
     end
 end
 
+"""
+  $(SIGNATURES)
+  - `ket::AbstractVector`: input column vector.
+  Return outer product of `ket`.
+"""
 proj(ket::AbstractVector{T}) where T<:Number = ket * ket'
 
 # function base_matrices(dim)
@@ -86,6 +94,11 @@ proj(ket::AbstractVector{T}) where T<:Number = ket * ket'
 #     Task(_it)
 # end
 
+"""
+    $(SIGNATURES)
+    - `dim::Int`: length of the matrix.
+    Returns elementary matrices of dimension `dim` x `dim`.
+"""
 base_matrices(dim) = Channel() do c
     dim > 0 ? () : error("Operator dimension has to be nonnegative")
     for i=0:dim-1, j=0:dim-1
@@ -93,6 +106,12 @@ base_matrices(dim) = Channel() do c
     end
 end
 
+"""
+  $(SIGNATURES)
+  - `ρ::AbstractMatrix`: input matrix.
+  Returns `vec(ρ.T)`. Reshaping maps
+        matrix `ρ` into a vector row by row.
+"""
 res(ρ::AbstractMatrix{T}) where T<:Number = vec(transpose(ρ))
 
 function unres(ϕ::AbstractVector{T}, cols::Int) where T<:Number
@@ -102,6 +121,11 @@ function unres(ϕ::AbstractVector{T}, cols::Int) where T<:Number
     transpose(reshape(ϕ, cols, rows))
 end
 
+"""
+  $(SIGNATURES)
+  - `ϕ::AbstractMatrix`: input matrix.
+ Return de-reshaping of the vector into a matrix.
+"""
 function unres(ϕ::AbstractVector{T}) where T<:Number
     dim = size(ϕ, 1)
     s = isqrt(dim)
@@ -110,27 +134,12 @@ end
 
 unres(ϕ::AbstractVector{T}, m::Int, n::Int) where T<:Number = transpose(reshape(ϕ, n, m))
 
-<<<<<<< HEAD
-=======
 """
-Transforms list of Kraus operators into super-operator matrix.
+  $(SIGNATURES)
+  - `kraus_list::Vector`: list of vectors.
+  - `ρ::AbstractMatrix`: input matrix.
+ Return mapping of `kraus_list` on `ρ`.
 """
-function kraus_to_superoperator(kraus_list::Vector{T}) where {T<:AbstractMatrix{T1}} where {T1<:Number}
-    # TODO: chceck if all Kraus operators are the same shape
-    sum((k) -> kron(k, k'), kraus_list)
-end
-
-function channel_to_superoperator(channel::Function, dim::Int)
-    dim > 0 ? () : error("Channel dimension has to be nonnegative")
-
-    M = zeros(ComplexF64, dim*dim, dim*dim)
-    for (i, e) in enumerate(base_matrices(dim))
-        M[:, i] = res(channel(e))
-    end
-    M
-end
-
->>>>>>> documentation
 # TODO: allow different type of Kraus operators and the quantum state
 function apply_kraus(kraus_list::Vector{T}, ρ::T) where {T<:AbstractMatrix{T1}} where {T1<:Number}
     # TODO: chceck if all Kraus operators are the same shape and fit the input state
@@ -147,7 +156,6 @@ function max_entangled(d::Int; sparse=false)
 end
 
 """
-<<<<<<< HEAD
 http://en.wikipedia.org/wiki/Werner_state
 """
 function werner_state(d::Int, α::Float64,)
@@ -168,8 +176,6 @@ def base_hermitian_matrices(dim):
             yield 1 / np.sqrt(2) * np.matrix(ketbra(a, b, dim) + ketbra(b, a, dim))
         else:
             yield np.matrix(ketbra(a, b, dim))
-
-
 def permute_systems(rho, dims, systemperm):
     rho = np.asarray(rho)
     dims = list(dims)
@@ -188,106 +194,3 @@ def permute_systems(rho, dims, systemperm):
     tensor = tensor.transpose(perm)
     return np.asmatrix(tensor.reshape(rho.shape))
 =#
-=======
-  $(SIGNATURES)
-
-  - `ρ::AbstractMatrix`: reshuffled matrix.
-
-  Performs reshuffling of indices of a matrix.
-  Given multiindexed matrix \$M_{(m,μ),(n,ν)}\$ it returns
-  matrix \$M_{(m,n),(μ,ν)}\$.
-"""
-function reshuffle(ρ::AbstractMatrix{T}) where T<:Number
-  (r, c) = size(ρ)
-  sqrtr = isqrt(r)
-  sqrtc = isqrt(c)
-  tensor = reshape(ρ, sqrtr, sqrtr, sqrtc, sqrtc)
-  perm = [4, 2, 3, 1]
-  tensor = permutedims(tensor, perm)
-  (r1, r2, c1, c2) = size(tensor)
-  return reshape(tensor, r1*r2, c1*c2)
-end
-
-"""
-  $(SIGNATURES)
-
-  - `ρ::AbstractMatrix`: matrix.
-  - `σ::AbstractMatrix`: matrix.
-  Original equation:
-  \$\\delta(\\rho,\\sigma)=\\frac{1}{2}\\mathrm{tr}(|\\rho-\\sigma|)\$
-
-  Equivalent faster method:
-  \$\\delta(A,B)=\\frac{1}{2} \\sum_i \\sigma_i(A-B)\$
-  http://www.quantiki.org/wiki/Trace_distance
-"""
-trace_distance(ρ::AbstractMatrix{T}, σ::AbstractMatrix{T}) where T<:Number = sum(abs.(eigvals(Hermitian(ρ - σ))))
-
-"""
-  $(SIGNATURES)
-
-  - `ρ::AbstractMatrix`: matrix.
-  - `σ::AbstractMatrix`: matrix.
-    Original equation:
-    \$\\sqrt{F}(\\rho,\\sigma)=\\textrm{tr}\\sqrt{\\sqrt{\\rho}\\sigma\\sqrt{\\rho}}\$
-
-    http://www.quantiki.org/wiki/Fidelity
-
-    Equivalent faster method:
-    \$\\sqrt{F}(\\rho,\\sigma)=\\sum_i \\sqrt{\\lambda_i(AB)}\$
-
-    ``Sub-- and super--fidelity as bounds for quantum fidelity''
-    Quantum Information & Computation, Vol.9 No.1&2 (2009)
-"""
-function fidelity_sqrt(ρ::AbstractMatrix{T}, σ::AbstractMatrix{T}) where T<:Number
-  if size(ρ, 1) != size(ρ, 2) || size(σ, 1) != size(σ, 2)
-    error("Non square matrix")
-  end
-  λ = real(eigvals(ρ * σ))
-  r = sum(sqrt.(λ[λ.>0]))
-end
-
-"""
-  $(SIGNATURES)
-
-  - `ρ::AbstractMatrix`: matrix.
-  - `σ::AbstractMatrix`: matrix.
-  \$F(\\rho,\\sigma)=\\left(\\textrm{tr}\\sqrt{\\sqrt{\\rho}\\sigma\\sqrt{\\rho}}\\right)^2\$
-
-  http://www.quantiki.org/wiki/Fidelity
-"""
-function fidelity(ρ::AbstractMatrix{T}, σ::AbstractMatrix{T}) where T<:Number
-  if size(ρ, 1) != size(ρ, 2) || size(σ, 1) != size(σ, 2)
-    error("Non square matrix")
-  end
-  return fidelity_sqrt(ρ, σ)^2
-end
-
-fidelity(ϕ::AbstractVector{T}, ψ::AbstractVector{T}) where T<:Number = abs2(dot(ϕ, ψ))
-fidelity(ϕ::AbstractVector{T}, ρ::AbstractMatrix{T}) where T<:Number = ϕ' * ρ * ϕ
-fidelity(ρ::AbstractMatrix{T}, ϕ::AbstractVector{T}) where T<:Number = fidelity(ϕ, ρ)
-
-shannon_entropy(p::AbstractVector{T}) where T<:Real = -sum(p .* log.(p))
-
-shannon_entropy(x::T) where T<:Real = x > 0 ? -x * log(x) - (1 - x) * log(1 - x) : error("Negative number passed to shannon_entropy")
-
-"""
-  $(SIGNATURES)
-
-    - `ρ::AbstractMatrix`: matrix.
-    Calculates the von Neuman entropy of positive matrix \$\\rho\$
-
-    \$S(\\rho)=-tr(\\rho\\log(\\rho))\$
-
-    Equivalent faster form:
-    \$S(\\rho)=-\\sum_i \\lambda_i(\\rho)*\\log(\\lambda_i(\\rho))\$
-    http://www.quantiki.org/wiki/Von_Neumann_entropy
-    """
-function entropy(ρ::Hermitian{T}) where T<:Number
-    λ = eigvals(ρ)
-    λ = λ[λ .> 0]
-    -sum(λ .* log(λ))
-end
-
-entropy(H::AbstractMatrix{T}) where T<:Number = ishermitian(H) ? entropy(Hermitian(H)) : error("Non-hermitian matrix passed to entropy")
-entropy(ϕ::AbstractVector{T}) where T<:Number = zero(T)
->>>>>>> documentation

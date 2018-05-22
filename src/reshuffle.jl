@@ -1,9 +1,4 @@
 
-"""
-  Performs reshuffling of indices of a matrix.
-  Given multiindexed matrix M_{(m,μ),(n,ν)} it returns
-  matrix M_{(m,n),(μ,ν)}.
-"""
 function reshuffle(ρ::AbstractMatrix{T}, dims::Matrix{Int}) where T<:Number
   m, n, μ, ν  = dims
   tensor = reshape(ρ, μ, m, ν, n)
@@ -28,6 +23,14 @@ function reshuffle(ρ::AbstractSparseMatrix{T}, dims::Matrix{Int}) where T<:Numb
     sparse(newI+1, newJ+1, V, prod(newdimsI), prod(newdimsJ))
 end
 
+
+"""
+  $(SIGNATURES)
+  - `ρ::Union{AbstractMatrix,AbstractSparseMatrix}`: reshuffled matrix.
+  Performs reshuffling of indices of a matrix.
+  Given multiindexed matrix \$M_{(m,μ),(n,ν)}\$ it returns
+  matrix \$M_{(m,n),(μ,ν)}\$.
+"""
 function reshuffle(ρ::Union{AbstractMatrix{T},AbstractSparseMatrix{T}}) where T<:Number
     (r, c) = size(ρ)
     sqrtr = isqrt(r)

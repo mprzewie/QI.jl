@@ -7,7 +7,7 @@ Author = "Piotr Gawron, Dariusz Kurzyk, Łukasz Pawela"
 
 A Julia package for numerical computation in quantum information theory.
 
-Numerical investigations are prevalent in quantum information theory. Numerical experiments can be used to find counter examples for theorems, to test hypotheses or to gain insight about quantum objects and operations.
+Numerical investigations are prevalent in quantum information theory. Numerical experiments can be used to find counter examples for theorems, to test hypotheses or to gain insight about quantum objects and operations. The purpose of **QI.jl** library is to provide functions to create quantum states, manipulate them with quantum channels, calculate functionals on these objects and sample them randomly from various distributions.
 
 Our goal while designing **QI.jl** library was to follow principles presented in book "Geometry of Quantum States'' [[1]](@ref refs). We work with column vectors reprinting kets and row vectors representing bras. We fix our basis to the computational one. Density matrices and quantum channels are represented as two dimensional arrays in the same fixed basis. This approach allows us to obtain low level complexity of our code, high flexibility and good computational efficiency. The design choices where highly motivated by the properties of the language in which the our library was implemented, namely
 [Julia](https://julialang.org/) [[2]](@ref refs).

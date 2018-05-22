@@ -17,7 +17,8 @@ makedocs(
             "man/vectors.md",
             "man/states.md",
             "man/functionals.md",
-            "man/random.md"
+            "man/random.md",
+            "man/examples.md"
         ],
         "Library" => "lib/QI.md"
         # Any[
@@ -35,9 +36,5 @@ makedocs(
 #     deps = Deps.pip("pygments", "mkdocs", "python-markdown-math"),
 #     target = "build",
 #     repo = "github.com/ZKSI/QI.jl.git",
-#     latest = "master",
-#     branch = "documentation",
-#     julia  = "nightly",
-#     make = nothing,
-#     julia = "0.6",
+#     branch = "documentation_new",
 # )
