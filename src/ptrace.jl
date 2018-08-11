@@ -9,7 +9,7 @@ Return [partial trace](https://en.wikipedia.org/wiki/Partial_trace) of matrix `�
 function ptrace(ρ::AbstractMatrix{<:Number}, idims::Vector{Int}, isystems::Vector{Int})
     # TODO: convert notation to column-major form
     dims=reverse(idims)
-    systems=length(idims)-isystems+1
+    systems=length(idims) .- isystems .+ 1
 
     if size(ρ,1)!=size(ρ,2)
         throw(ArgumentError("Non square matrix passed to ptrace"))
@@ -23,7 +23,7 @@ function ptrace(ρ::AbstractMatrix{<:Number}, idims::Vector{Int}, isystems::Vect
     offset = length(dims)
     keep = setdiff(1:offset, systems)
     dispose = systems
-    perm  = [dispose; keep; dispose+offset; keep+offset]
+    perm  = [dispose; keep; dispose .+ offset; keep .+ offset]
     tensor = reshape(ρ, [dims; dims]...)
     keepdim = prod([size(tensor,x) for x in keep])
     disposedim = prod([size(tensor,x) for x in dispose])
