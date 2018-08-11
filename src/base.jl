@@ -14,14 +14,7 @@ function ket(::Type{Tv}, val::Int, dim::Int) where Tv<:AbstractSparseVector{T} w
     ϕ
 end
 
-"""
-$(SIGNATURES)
-- `val`: non-zero entry - label.
-- `dim`: length of the vector.
-- `sparse` : sparse\/dense option. Optional `sparse=false`.
 
-Return complex column vector \$|val\\rangle\$ of unit norm describing quantum state.
-"""
 function ket(val::Int, dim::Int; sparse=false)
     if sparse
         return ket(SparseVector{ComplexF64}, val, dim)
@@ -33,14 +26,7 @@ end
 
 bra(::Type{Tv}, val::Int, dim::Int) where Tv<:AbstractVector{T} where T<:Number = ket(Tv, val, dim)'
 
-"""
-$(SIGNATURES)
-- `val`: non-zero entry - label.
-- `dim`: length of the vector
-- `sparse` : sparse\/dense option. Optional `sparse=false`.
 
-Return Hermitian conjugate \$\\langle val| = |val\\rangle^\\dagger\$ of the ket with the same label.
-"""
 function bra(val::Int, dim::Int; sparse=false)
     if sparse
         return bra(SparseVector{ComplexF64}, val, dim)
@@ -65,15 +51,6 @@ function ketbra(::Type{Tm}, valk::Int, valb::Int, dim::Int) where Tm<:AbstractSp
     ϕψ
 end
 
-"""
-$(SIGNATURES)
-- `valk`: non-zero entry - label.
-- `valb`: non-zero entry - label.
-- `dim`: length of the vector
-- `sparse` : sparse\/dense option. Optional `sparse=false`.
-
-Return outer product \$\|valk\\rangle\\langle vakb|\$ of states \$\|valk\\rangle\$ and \$\|valb\\rangle\$.
-"""
 function ketbra(valk::Int, valb::Int, dim::Int; sparse=false)
     if sparse
         return ketbra(SparseMatrixCSC{ComplexF64}, valk, valb, dim)
@@ -82,12 +59,7 @@ function ketbra(valk::Int, valb::Int, dim::Int; sparse=false)
     end
 end
 
-"""
-$(SIGNATURES)
-- `ket`: input column vector.
 
-Return outer product \$|ket\\rangle\\langle ket|\$ of `ket`.
-"""
 proj(ket::AbstractVector{<:Number}) = ket * ket'
 
 # function base_matrices(dim)
@@ -99,12 +71,7 @@ proj(ket::AbstractVector{<:Number}) = ket * ket'
 #     Task(_it)
 # end
 
-"""
-$(SIGNATURES)
-- `dim`: length of the matrix.
 
-Returns elementary matrices of dimension `dim` x `dim`.
-"""
 base_matrices(::Type{Tm}, dim::Int) where Tm<:AbstractMatrix{T} where T<:Number = Channel() do c
     dim > 0 ? () : error("Operator dimension has to be nonnegative")
     for i=0:dim-1, j=0:dim-1
@@ -114,13 +81,7 @@ end
 
 base_matrices(dim::Int) = base_matrices(Matrix{ComplexF64}, dim)
 
-"""
-$(SIGNATURES)
-- `ρ`: input matrix.
 
-Returns `vec(ρ.T)`. Reshaping maps
-    matrix `ρ` into a vector row by row.
-"""
 res(ρ::AbstractMatrix{<:Number}) = vec(transpose(ρ))
 
 function unres(ϕ::AbstractVector{<:Number}, cols::Int)
@@ -130,12 +91,7 @@ function unres(ϕ::AbstractVector{<:Number}, cols::Int)
     transpose(reshape(ϕ, cols, rows))
 end
 
-"""
-$(SIGNATURES)
-- `ϕ`: input matrix.
 
-Return de-reshaping of the vector into a matrix.
-"""
 function unres(ϕ::AbstractVector{<:Number})
     dim = size(ϕ, 1)
     s = isqrt(dim)
@@ -158,22 +114,10 @@ function apply_kraus(kraus_list::Vector{T}, ρ::T) where {T<:AbstractMatrix{T1}}
     sum(k-> k*ρ*k', kraus_list)
 end
 
-"""
-$(SIGNATURES)
-- `d`: length of the vector.
-- `sparse` : sparse\/dense option. Optional `sparse=false`.
 
-Return maximally mixed state \$\\frac{1}{d}\\sum_{i=0}^{d-1}|i\\rangle\\langle i |\$ of length \$d\$.
-"""
 max_mixed(d::Int; sparse=false) = sparse ? speye(ComplexF64, d, d)/d : eye(ComplexF64, d, d)/d
 
-"""
-$(SIGNATURES)
-- `d`: length of the vector.
-- `sparse` : sparse\/dense option. Optional `sparse=false`.
 
-Return maximally entangled state \$\\frac{1}{\\sqrt{d}}\\sum_{i=0}^{\\sqrt{d}-1}|ii\\rangle\$ of length \$\\sqrt{d}\$.
-"""
 function max_entangled(d::Int; sparse=false)
     sd = isqrt(d)
     ϕ = sparse ? res(speye(ComplexF64, sd, sd)) : res(eye(ComplexF64, sd, sd))
@@ -181,13 +125,7 @@ function max_entangled(d::Int; sparse=false)
     ϕ
 end
 
-"""
-- `d`: length of the vector.
-- `α`: real number from [0, 1].
 
-Returns [Werner state](http://en.wikipedia.org/wiki/Werner_state) given by
-\$ \\frac{\\alpha}{d}\\Big(\\sum_{i=0}^{\\sqrt{d}-1}|ii\\rangle\\Big) \\Big(\\sum_{i=0}^{\\sqrt{d}-1}\\langle ii|\\Big)+ \\frac{1-\\alpha}{d}\\sum_{i=0}^{d-1}|i\\rangle\\langle i |\$.
-"""
 function werner_state(d::Int, α::Float64,)
     α > 1 || α < 0 ? throw(ArgumentError("α must be in [0, 1]")) : ()
     α * proj(max_entangled(d)) + (1 - α) * max_mixed(d)
@@ -208,7 +146,7 @@ function permute_systems(ρ::AbstractMatrix{T}, dims::Vector{Int}, systems::Vect
     perm_1 = systems
     perm_2 = [p + offset for p in perm_1]
     perm = [perm_1 ; perm_2] # vcat(perm_1 ; perm_2)
-    reversed_indices = (length(perm):-1:1...)
+    reversed_indices = Vector(length(perm):-1:1)
     reversed_dims = reverse(dims)
     tensor = reshape(ρ, tuple([reversed_dims ; reversed_dims]...))
     # reversed_tensor is introduced because of differences how arrays are stored and reshaped in julia and numpy
