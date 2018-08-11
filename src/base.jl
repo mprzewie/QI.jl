@@ -35,14 +35,7 @@ function ketbra(::Type{Tm}, valk::Int, valb::Int, dim::Int) where Tm<:AbstractMa
     ρ
 end
 
-"""
-$(SIGNATURES)
-- `valk`: non-zero entry - label.
-- `valb`: non-zero entry - label.
-- `dim`: length of the vector
 
-Return outer product \$\|valk\\rangle\\langle vakb|\$ of states \$\|valk\\rangle\$ and \$\|valb\\rangle\$.
-"""
 ketbra(valk::Int, valb::Int, dim::Int) = ketbra(Matrix{ComplexF64}, valk, valb, dim)
 
 """
@@ -140,7 +133,7 @@ $(SIGNATURES)
 
 Returns state ρ with permutated registers denoted by `systems`.
 """
-function permutesystems(ρ::AbstractMatrix{T}, dims::Vector{Int}, systems::Vector{Int}) where T<:Number
+function permute_systems(ρ::AbstractMatrix{T}, dims::Vector{Int}, systems::Vector{Int}) where T<:Number
     if size(ρ,1)!=size(ρ,2)
         throw(ArgumentError("Non square matrix passed to ptrace"))
     end
@@ -154,14 +147,16 @@ function permutesystems(ρ::AbstractMatrix{T}, dims::Vector{Int}, systems::Vecto
     perm_1 = systems
     perm_2 = [p + offset for p in perm_1]
     perm = [perm_1 ; perm_2] # vcat(perm_1 ; perm_2)
-    reversed_indices = (length(perm):-1:1...)
-    tensor = reshape(ρ, tuple([dims ; dims]...))
+    reversed_indices = Vector(length(perm):-1:1)
+    reversed_dims = reverse(dims)
+    tensor = reshape(ρ, tuple([reversed_dims ; reversed_dims]...))
     # reversed_tensor is introduced because of differences how arrays are stored and reshaped in julia and numpy
     reversed_tensor = permutedims(tensor, reversed_indices)
     reversed_transposed_tensor = permutedims(reversed_tensor, perm)
     transposed_tensor = permutedims(reversed_transposed_tensor, reversed_indices)
     return reshape(transposed_tensor, size(ρ))
 end
+
 
 
 #=
